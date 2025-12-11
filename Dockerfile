@@ -1,10 +1,13 @@
 FROM python:3.9-slim
 
-WORKDIR /app
+# Set working directory inside container
+WORKDIR /application
 
-COPY app.py .
+# Copy main Python script
+COPY app.py /application/
 
-# Create directory for SQLite database
-RUN mkdir -p /data
+# Ensure database directory exists
+RUN mkdir -p /storage/db
 
+# Default command for running the script
 CMD ["python", "app.py"]
