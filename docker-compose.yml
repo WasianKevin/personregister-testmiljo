@@ -6,6 +6,9 @@ services:
       - userdb_volume:/storage/db
     environment:
       - USER_DB_PATH=/storage/db/sample_users.db
+    tty: true
+    stdin_open: true
+
 
 volumes:
   userdb_volume:

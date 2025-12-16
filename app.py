@@ -1,108 +1,203 @@
-import sqlite3
-import os
+# Programmet skapar en SQLite-databas för användare, lägger in testdata om databasen 
+# är tom och kan visa, radera eller anonymisera användardata enligt GDPR
+
+
+import sqlite3  # Används för att arbeta med SQLite-databas
+import os       # Används för filer, mappar och miljövariabler
+
 
 # -----------------------------
 # Databasväg
 # -----------------------------
-# Använd mappen "data" i projektmappen
+
+# Hämtar databasens sökväg från miljövariabel
+# Om den inte finns används standardvägen ./data/sample_users.db
 db_file = os.getenv("USER_DB_PATH", "./data/sample_users.db")
 
-# Skapa mappen om den inte finns
-if not os.path.exists(os.path.dirname(db_file)):
-    os.makedirs(os.path.dirname(db_file))
+# Hämtar mappens namn från sökvägen
+folder_path = os.path.dirname(db_file)
+
+# Skapar mappen om den inte redan finns
+if not os.path.exists(folder_path):
+    os.makedirs(folder_path)
 
 
 # -----------------------------
 # Funktioner
 # -----------------------------
+
 def setup_db():
-    """Create database and user table if not already present."""
+    """Skapar databasen och tabellen om de inte finns"""
+
+    # Ansluter till databasen (skapas om den inte finns)
     connection = sqlite3.connect(db_file)
+
+    # Cursor används för att köra SQL-kommandon
     cur = connection.cursor()
 
-    # Create table
+    # Skapar tabellen persons om den inte redan finns
     cur.execute("""
         CREATE TABLE IF NOT EXISTS persons (
-            user_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            full_name TEXT NOT NULL,
-            mail TEXT NOT NULL
+            user_id INTEGER PRIMARY KEY AUTOINCREMENT,  -- Unikt ID
+            full_name TEXT NOT NULL,                     -- Användarens namn
+            mail TEXT NOT NULL                           -- Användarens e-post
         )
     """)
 
-    # Check if table has data
+    # Räknar hur många rader som finns i tabellen
     cur.execute("SELECT COUNT(*) FROM persons")
     existing_records = cur.fetchone()[0]
 
+    # Om tabellen är tom läggs testanvändare till
     if existing_records == 0:
-        # Insert demo users
         seed_data = [
             ("Karin Karlsson", "karin@example.com"),
-            ("David Dahl", "david@example.com")
+            ("David Dahl", "david@example.com"),
+            ("Erik Erikson", "Erik@example.com")
         ]
-        cur.executemany(
-            "INSERT INTO persons (full_name, mail) VALUES (?, ?)", seed_data
-        )
-        print("Database created and demo users added.")
-    else:
-        print(f"Database already contains {existing_records} users.")
 
+        # Lägger in flera användare samtidigt
+        cur.executemany(
+            "INSERT INTO persons (full_name, mail) VALUES (?, ?)",
+            seed_data
+        )
+        print("Databas skapad och testanvändare tillagda.")
+    else:
+        print(f"Databasen innehåller redan {existing_records} användare.")
+
+    # Sparar ändringar
     connection.commit()
+
+    # Stänger databasen
     connection.close()
 
 
 def list_all_users():
-    """Print all users from database."""
+    """Visar alla användare i databasen"""
+
+    # Ansluter till databasen
     connection = sqlite3.connect(db_file)
     cur = connection.cursor()
 
+    # Hämtar alla användare
     cur.execute("SELECT * FROM persons")
     rows = cur.fetchall()
 
-    print("\nUsers currently stored:")
-    for uid, name, mail in rows:
-        print(f"ID: {uid}, Name: {name}, Email: {mail}")
+    # Skriver ut användarna
+    print("\nAnvändare i databasen:")
+    for user_id, name, mail in rows:
+        print(f"ID: {user_id}, Namn: {name}, E-post: {mail}")
 
+    # Stänger databasen
     connection.close()
 
 
 def wipe_data():
-    """Remove all data (GDPR – delete personal data)."""
+    """Tar bort all användardata (GDPR)"""
+
+    # Ansluter till databasen
     connection = sqlite3.connect(db_file)
     cur = connection.cursor()
 
+    # Tar bort alla rader i tabellen
     cur.execute("DELETE FROM persons")
+
+    # Sparar ändringar
     connection.commit()
+
+    # Stänger databasen
     connection.close()
 
-    print("All entries removed (GDPR delete action).")
+    print("All användardata är borttagen (GDPR).")
 
 
 def mask_user_info():
-    """Anonymize user names (GDPR pseudonymization)."""
+    """Anonymiserar användarnas namn (GDPR)"""
+
+    # Ansluter till databasen
     connection = sqlite3.connect(db_file)
     cur = connection.cursor()
 
+    # Uppdaterar alla namn till ett anonymt värde
     cur.execute("""
-        UPDATE persons 
+        UPDATE persons
         SET full_name = 'Anonymiserad Användare'
     """)
 
+    # Sparar ändringar
     connection.commit()
+
+    # Stänger databasen
     connection.close()
+
+    print("Alla användarnamn är anonymiserade.")
     
-    print("User names anonymized (GDPR anonymization).")
+
+
+# -----------------------------
+# TEST
+# -----------------------------
+
+def test_generate_test_data():
+    """Testar att testdata genereras i databasen"""
+
+    # Använd en separat testdatabas
+    global db_file
+    original_db = db_file
+    test_db = "test_generate_data.db"
+    db_file = test_db
+
+    # Säkerställ att testdatabasen inte finns sedan tidigare
+    if os.path.exists(test_db):
+        os.remove(test_db)
+
+    # Kör funktionen som skapar testdata
+    setup_db()
+
+    # Kontrollera att data finns
+    connection = sqlite3.connect(test_db)
+    cur = connection.cursor()
+    cur.execute("SELECT COUNT(*) FROM persons")
+    count = cur.fetchone()[0]
+    connection.close()
+
+    # Skriv ut testresultat
+    print(f"[TEST] Antal genererade testanvändare: {count}")
+
+    assert count > 0  # Testdata har genererats
+
+    # Återställ databas
+    db_file = original_db
+
+    # Städa upp
+    if os.path.exists(test_db):
+        os.remove(test_db)
+
+    print("[TEST] test_generate_test_data lyckades")
 
 
 # -----------------------------
 # Huvudprogram
 # -----------------------------
-if __name__ == "__main__":
-    setup_db()
-    list_all_users()
 
-    print("\nService running. Press Ctrl+C to exit.")
+# Körs bara om filen startas direkt
+if __name__ == "__main__":
+
+    # Skapar databasen och tabellen
+    setup_db()
+
+    # Visar alla användare
+    list_all_users()
+    
+    # KÖR TESTET
+    test_generate_test_data()
+
+    print("\nProgrammet körs. Tryck Ctrl+C för att avsluta.")
+
     try:
+        # Oändlig loop för att hålla programmet igång
         while True:
             pass
     except KeyboardInterrupt:
-        print("\nStopping program...")
+        # Körs när användaren trycker Ctrl+C
+        print("\nProgrammet avslutas...")
