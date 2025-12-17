@@ -1,15 +1,12 @@
-# Namn på pipelinen (syns i GitHub Actions)
-name: User GDPR – Build and Test
+name: User GDPR – Full Code Test
 
-# När pipelinen ska köras
 on:
-  push:            # Körs vid push
-  pull_request:    # Körs vid pull request
+  push:
+  pull_request:
 
-# Jobb som körs
 jobs:
   test:
-    runs-on: ubuntu-latest   # Körs på Linux
+    runs-on: ubuntu-latest
 
     steps:
       # Steg 1: Ladda ner koden
@@ -22,14 +19,7 @@ jobs:
         with:
           python-version: '3.9'
 
-      # Steg 3: Testa imports och syntax
-      - name: Test imports and syntax
+      # Steg 3: Kör hela applikationen
+      - name: Run full application test
         run: |
-          # Testar att viktiga moduler går att importera
-          python -c "import sqlite3, os; print('All imports successful')"
-
-          # Kontrollerar att app.py inte har syntaxfel
-          python -m py_compile app.py
-
-          # Skriver ut att testet lyckades
-          echo "Code compilation successful"
+          python app.py
