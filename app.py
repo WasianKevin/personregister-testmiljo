@@ -189,15 +189,13 @@ if __name__ == "__main__":
     # Visar alla användare
     list_all_users()
     
+    #maskerar användare
+    mask_user_info()
+    
+    # Visar alla användare igen
+    list_all_users()
+    
     # KÖR TESTET
     test_generate_test_data()
 
     print("\nProgrammet körs. Tryck Ctrl+C för att avsluta.")
-
-    try:
-        # Oändlig loop för att hålla programmet igång
-        while True:
-            pass
-    except KeyboardInterrupt:
-        # Körs när användaren trycker Ctrl+C
-        print("\nProgrammet avslutas...")

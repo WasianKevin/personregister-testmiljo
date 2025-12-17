@@ -1,25 +1,35 @@
-name: User GDPR - Full Code Test
+name: User GDPR - Test
 
 on:
   push:
+    branches: [ "main" ]
   pull_request:
+    branches: [ "main" ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      # Steg 1: Ladda ner koden
+      # Step 1: Checkout the code
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4[citation:1]
 
-      # Steg 2: Installera Python
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      # Step 2: Set up Python
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v5[citation:5]
         with:
-          python-version: '3.9'
+          python-version: '3.9'[citation:5]
 
-      # Steg 3: Kör hela applikationen
-      - name: Run full application test
+      # Step 3: Run the test from app.py in isolation
+      - name: Run unit test
         run: |
-          python app.py
+          # Temporarily redirect the app's database to a test file to avoid side effects
+          export USER_DB_PATH="./test_users.db"
+          # Run the specific test function
+          python -c "
+import app
+app.test_generate_test_data()
+          "
+          # Remove the test database file after the test
+          rm -f ./test_users.db
