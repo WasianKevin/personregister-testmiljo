@@ -13,13 +13,13 @@ jobs:
     steps:
       # Step 1: Checkout the code
       - name: Checkout code
-        uses: actions/checkout@v4[citation:1]
+        uses: actions/checkout@v4
 
       # Step 2: Set up Python
       - name: Set up Python 3.9
-        uses: actions/setup-python@v5[citation:5]
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.9'[citation:5]
+          python-version: '3.9'  # ← Properly indented with 2 more spaces
 
       # Step 3: Run the test from app.py in isolation
       - name: Run unit test
