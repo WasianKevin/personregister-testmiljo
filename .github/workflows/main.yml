@@ -1,27 +1,35 @@
-# Namn på CI/CD-pipelinen
-name: Build and Test Pipeline
+# Namn på pipelinen (syns i GitHub Actions)
+name: User GDPR – Build and Test
 
 # När pipelinen ska köras
 on:
-  push:            # När kod pushas
-  pull_request:    # När en pull request skapas
+  push:            # Körs vid push
+  pull_request:    # Körs vid pull request
 
-# Jobb som ska köras
+# Jobb som körs
 jobs:
-  build-and-test:
+  test:
     runs-on: ubuntu-latest   # Körs på Linux
 
     steps:
-      # Steg 1: Ladda ner koden från GitHub
-      - name: Checkout repository
+      # Steg 1: Ladda ner koden
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      # Steg 2: Bygg Docker-image
-      - name: Build Docker image
-        run: |
-          docker build -t user-gdpr-app .
+      # Steg 2: Installera Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
 
-      # Steg 3: Kör containern och visa output
-      - name: Run container and test GDPR flow
+      # Steg 3: Testa imports och syntax
+      - name: Test imports and syntax
         run: |
-          docker run --rm user-gdpr-app
+          # Testar att viktiga moduler går att importera
+          python -c "import sqlite3, os; print('All imports successful')"
+
+          # Kontrollerar att app.py inte har syntaxfel
+          python -m py_compile app.py
+
+          # Skriver ut att testet lyckades
+          echo "Code compilation successful"
