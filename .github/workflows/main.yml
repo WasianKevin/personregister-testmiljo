@@ -1,0 +1,25 @@
+name: User GDPR – Full Code Test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Steg 1: Ladda ner koden
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Steg 2: Installera Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      # Steg 3: Kör hela applikationen
+      - name: Run full application test
+        run: |
+          python app.py
