@@ -1,0 +1,27 @@
+# Namn på CI/CD-pipelinen
+name: Build and Test Pipeline
+
+# När pipelinen ska köras
+on:
+  push:            # När kod pushas
+  pull_request:    # När en pull request skapas
+
+# Jobb som ska köras
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest   # Körs på Linux
+
+    steps:
+      # Steg 1: Ladda ner koden från GitHub
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Steg 2: Bygg Docker-image
+      - name: Build Docker image
+        run: |
+          docker build -t user-gdpr-app .
+
+      # Steg 3: Kör containern och visa output
+      - name: Run container and test GDPR flow
+        run: |
+          docker run --rm user-gdpr-app
