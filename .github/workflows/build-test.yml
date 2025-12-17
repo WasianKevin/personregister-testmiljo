@@ -15,5 +15,4 @@ jobs:
     
     - name: Run test
       run: |
-        export USER_DB_PATH="test.db"
-        python -c "
+        python -c "import app; app.test_generate_test_data(); print('✅ Test passed')"
